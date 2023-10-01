@@ -21,7 +21,7 @@ initializeApp({
   projectId: "fcm-notification-2a7f7",
 });
 
-const token = "";
+var token = "";
 
 /**
  * this route registers the device token on the server
@@ -30,6 +30,7 @@ app.post("/api/v1/register", (req, res) => {
   if (!req.body.token) {
     res.status(400).json({ status: "fail", message: "Please in the token" });
   }
+  console.log(req.body.token);
   token = req.body.token;
   res.status(201).json({ status: "success", message: "Device registered" });
 });
