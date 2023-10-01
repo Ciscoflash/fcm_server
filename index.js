@@ -4,7 +4,7 @@ const { getMessaging } = require("firebase-admin/messaging");
 const express = require("express");
 const app = express();
 const cors = require("cors");
-process.env.GOOGLE_APPLICATION_CREDENTIALS;
+// process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 app.use(express.json());
 
@@ -18,43 +18,47 @@ app.use(
 
 initializeApp({
   credentials: applicationDefault(),
-  projectId: "portion for creators",
+  projectId: "fcm-notification-2a7f7",
 });
 
-app.post("/api/v1/fcm_nitify", (req, res) => {
-  const Tokens = [];
-  const titleti
-  Tokens.push(req.body.fcmtoken);
-  res.json(Tokens);
+const token = "";
+
+/**
+ * this route registers the device token on the server
+ */
+app.post("/api/v1/register", (req, res) => {
+  if (!req.body.token) {
+    res.status(400).json({ status: "fail", message: "Please in the token" });
+  }
+  token = req.body.token;
+  res.status(201).json({ status: "success", message: "Device registered" });
+});
+
+/**
+ * This route receives a message and broadcasts to the device
+ */
+app.post("/api/v1/fcm_notify", (req, res) => {
+  if (!req.body.message) {
+    res
+      .status(400)
+      .json({ status: "fail", message: "Provide the message to broadcast" });
+  }
   const message = {
     notification: {
       title: "Test Notification",
-      body: "This is  a test notification",
+      body: req.body.message,
     },
-    tokens: Tokens,
+    //used token instead of tokens because we are currently dealing with only on testing device
+    token: token,
   };
 
-  if (Tokens.length > 0) {
-    getMessaging
+  if (token) {
+    getMessaging()
       .send(message)
       .then((response) => {
         res.status(200).json({
           message: "notification sent successfully",
-          token: Tokens,
-        });
-      })
-      .catch((err) => {
-        return res
-          .status(400)
-          .json({ message: "Error sending notification", error: err });
-      });
-  } else {
-    getMessaging
-      .send(message)
-      .then((response) => {
-        res.status(200).json({
-          message: "notification sent successfully",
-          token: Tokens,
+          response,
         });
       })
       .catch((err) => {
