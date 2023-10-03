@@ -23,6 +23,9 @@ initializeApp({
 
 var token = "";
 
+app.get("/", (req, res) => {
+  res.send("FCM Notification Server");
+});
 /**
  * this route registers the device token on the server
  */
