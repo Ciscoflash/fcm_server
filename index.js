@@ -41,20 +41,76 @@ app.post("/api/v1/register", (req, res) => {
 /**
  * This route receives a message and broadcasts to the device
  */
-app.post("/api/v1/fcm_notify", (req, res) => {
+const messages = [
+  {
+    type: "Profile",
+    message: {
+      fullname: "John Smith",
+      age: 45,
+      gender: "Male",
+      transactionId: 1,
+    },
+  },
+  {
+    type: "Transaction",
+    message: {
+      status: "success",
+      amount: 100000,
+      date: Date.now(),
+    },
+  },
+];
+
+const msg = {
+  types: {
+    profile: {
+      title: "Profile",
+      message: {
+        fullname: "John Smith",
+        age: 45,
+        gender: "Male",
+        transactionId: 1,
+      },
+    },
+    transaction: {
+      title: "Transaction",
+      message: {
+        status: "success",
+        amount: 100000,
+        date: Date.now(),
+      },
+    },
+  },
+};
+app.post("/api/v1/fcm_notify/", (req, res) => {
+  let { profile, transaction } = req.query;
+  let message;
   if (!req.body.message) {
     res
       .status(400)
       .json({ status: "fail", message: "Provide the message to broadcast" });
   }
-  const message = {
-    notification: {
-      title: "Test Notification",
-      body: "testing the notification",
-    },
-    //used token instead of tokens because we are currently dealing with only on testing device
-    token: token,
-  };
+  if (profile) {
+    message = {
+      notification: {
+        title: "Test Notification",
+        body: "testing the notification",
+      },
+      data: msg.types.profile,
+      //used token instead of tokens because we are currently dealing with only on testing device
+      token: token,
+    };
+  } else {
+    message = {
+      notification: {
+        title: "Test Notification",
+        body: "testing the notification",
+      },
+      data: msg.types.transaction,
+      //used token instead of tokens because we are currently dealing with only on testing device
+      token: token,
+    };
+  }
   if (token) {
     getMessaging()
       .send(message)
