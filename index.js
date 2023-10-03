@@ -41,25 +41,6 @@ app.post("/api/v1/register", (req, res) => {
 /**
  * This route receives a message and broadcasts to the device
  */
-const messages = [
-  {
-    type: "Profile",
-    message: {
-      fullname: "John Smith",
-      age: 45,
-      gender: "Male",
-      transactionId: 1,
-    },
-  },
-  {
-    type: "Transaction",
-    message: {
-      status: "success",
-      amount: 100000,
-      date: Date.now(),
-    },
-  },
-];
 
 const msg = {
   types: {
@@ -82,42 +63,41 @@ const msg = {
     },
   },
 };
+
 app.post("/api/v1/fcm_notify/", (req, res) => {
-  let { profile, transaction } = req.query;
-  let message;
+  const { type } = req.query;
+  const caption = req.body.caption;
   if (!req.body.message) {
     res
       .status(400)
       .json({ status: "fail", message: "Provide the message to broadcast" });
   }
-  if (profile) {
-    message = {
-      notification: {
-        title: "Test Notification",
-        body: "testing the notification",
-      },
-      data: msg.types.profile,
-      //used token instead of tokens because we are currently dealing with only on testing device
-      token: token,
-    };
-  } else {
-    message = {
-      notification: {
-        title: "Test Notification",
-        body: "testing the notification",
-      },
-      data: msg.types.transaction,
-      //used token instead of tokens because we are currently dealing with only on testing device
-      token: token,
-    };
+  // to validate the object
+  if (!Object.keys(msg.types).includes(type)) {
+    return res.json({
+      status: "Error",
+      message: "Invalid type for broadcast",
+    });
   }
+  const message = {
+    notification: {
+      title: "Test Notification",
+      body: req.body.message,
+    },
+    data: {
+      [type]: JSON.stringify(msg.types[type]),
+    },
+
+    //used token instead of tokens because we are currently dealing with only on testing device
+    token: token,
+  };
   if (token) {
     getMessaging()
       .send(message)
       .then((response) => {
         res.status(200).json({
           message: "notification sent successfully",
-          response,
+          message,
         });
       })
       .catch((err) => {
