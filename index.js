@@ -4,7 +4,7 @@ const { getMessaging } = require("firebase-admin/messaging");
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// process.env.GOOGLE_APPLICATION_CREDENTIALS;
+process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 app.use(express.json());
 
@@ -50,12 +50,11 @@ app.post("/api/v1/fcm_notify", (req, res) => {
   const message = {
     notification: {
       title: "Test Notification",
-      body: req.body.message,
+      body: "testing the notification",
     },
     //used token instead of tokens because we are currently dealing with only on testing device
     token: token,
   };
-
   if (token) {
     getMessaging()
       .send(message)
